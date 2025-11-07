@@ -1,139 +1,144 @@
 import streamlit as st
 import random
-import pandas as pd
+import time
+import csv
 
-# ============================
-# CONFIGURACIÓN
-# ============================
-st.set_page_config(page_title="Keyword Finder Pro+", page_icon="🚀", layout="centered")
+# -------------------- CONFIG --------------------
+st.set_page_config(
+    page_title="Keyword Finder Pro+ v3",
+    page_icon="🔍",
+    layout="centered"
+)
 
-# ============================
-# ESTILOS
-# ============================
+# -------------------- CSS PERSONALIZADO --------------------
 st.markdown("""
-<style>
+    <style>
+    body {
+        background: #f9fafb;
+        font-family: 'Inter', sans-serif;
+    }
     .main {
-        background-color: #ffffff;
-        padding: 2rem;
-        border-radius: 20px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        max-width: 800px;
-        margin: auto;
+        background: white;
+        padding: 3rem;
+        border-radius: 1.5rem;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        transition: 0.3s ease-in-out;
     }
-    .stButton>button {
-        background: linear-gradient(90deg, #2563eb, #1e40af);
-        color: white;
-        border: none;
-        padding: 0.6rem 1.2rem;
-        border-radius: 12px;
+    h1 {
+        color: #1f2937;
+        text-align: center;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    h3 {
+        color: #374151;
         font-weight: 600;
-        transition: all 0.2s ease-in-out;
     }
-    .stButton>button:hover {
-        transform: scale(1.05);
-        background: linear-gradient(90deg, #1d4ed8, #1e3a8a);
+    .stButton > button {
+        background-color: #2563eb;
+        color: white;
+        font-weight: 600;
+        border-radius: 10px;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        transition: 0.3s;
     }
-    h1 { text-align: center; color: #1e3a8a; margin-bottom: 0.5rem; }
-    h2 { text-align: center; color: #334155; margin-bottom: 1rem; }
-</style>
+    .stButton > button:hover {
+        background-color: #1d4ed8;
+        transform: scale(1.02);
+    }
+    .keyword-card {
+        background: #f1f5f9;
+        padding: 0.75rem 1rem;
+        margin: 0.5rem 0;
+        border-radius: 10px;
+        transition: 0.3s;
+    }
+    .keyword-card:hover {
+        background: #e2e8f0;
+        transform: translateX(3px);
+    }
+    footer {visibility: hidden;}
+    </style>
 """, unsafe_allow_html=True)
 
-# ============================
-# TÍTULOS
-# ============================
-st.markdown("<h1>🚀 Keyword Finder Pro+</h1>", unsafe_allow_html=True)
-st.markdown("<h2>Generador inteligente de palabras clave</h2>", unsafe_allow_html=True)
+# -------------------- FUNCIONES --------------------
+def generar_keywords(base, idioma, cantidad, palabras, nivel, tipo):
+    modificadores = {
+        "SEO": ["mejor", "barato", "profesional", "opiniones", "guía", "tutorial", "recomendado", "2025", "online"],
+        "Ads": ["comprar", "oferta", "nuevo", "promoción", "precio", "envío", "descuento", "calidad"],
+        "Informacional": ["qué es", "cómo usar", "tipos de", "ideas para", "ejemplos de", "beneficios de"]
+    }
 
-# ============================
-# ENTRADAS
-# ============================
-producto = st.text_input("🛒 Producto o categoría base:", placeholder="Ejemplo: zapatillas, auriculares, relojes...")
+    # Ajustar según nivel
+    if nivel == "Básico":
+        random.shuffle(modificadores[tipo])
+        modificadores[tipo] = modificadores[tipo][:4]
+    elif nivel == "Intermedio":
+        modificadores[tipo] = modificadores[tipo]
+    elif nivel == "Avanzado":
+        modificadores[tipo] += ["análisis", "comparativa", "reviews", "tendencias", "estrategias"]
+
+    keywords = []
+    for _ in range(cantidad):
+        mod = random.choice(modificadores[tipo])
+        estructura = random.choice([
+            f"{base} {mod}",
+            f"{mod} {base}",
+            f"{base} {mod} {random.choice(['alta calidad', 'profesional', '2025'])}",
+        ])
+        palabra_final = " ".join(estructura.split()[:palabras])
+        keywords.append(palabra_final.strip())
+
+    # Remover duplicados
+    return list(dict.fromkeys(keywords))
+
+# -------------------- UI --------------------
+st.title("🔍 Generador profesional de palabras clave")
+st.markdown("### Personalizá tus keywords de forma precisa y profesional")
+
+base = st.text_input("🛒 Producto o categoría base:", placeholder="Ejemplo: cortina mosquitero")
 
 col1, col2 = st.columns(2)
 with col1:
     idioma = st.selectbox("🌐 Idioma", ["Español", "Inglés", "Portugués"])
-    cantidad = st.slider("🔢 Cantidad de keywords", 5, 50, 20, step=5)
 with col2:
-    longitud = st.slider("🧩 Palabras por keyword", 1, 4, 2)
-    complejidad = st.selectbox("⚙️ Nivel de complejidad", ["Básico", "Intermedio", "Avanzado"])
+    tipo = st.selectbox("🎯 Tipo de búsqueda", ["SEO", "Ads", "Informacional"])
 
-# ============================
-# PATRONES POR IDIOMA
-# ============================
+col3, col4 = st.columns(2)
+with col3:
+    cantidad = st.slider("📊 Cantidad de keywords", 5, 50, 15)
+with col4:
+    palabras = st.slider("🔤 Palabras por keyword", 2, 6, 3)
 
-def patrones_por_idioma(idioma):
-    if idioma == "Español":
-        return [
-            "comprar {p}", "mejores {p}", "oferta de {p}", "{p} en línea",
-            "{p} profesional", "precio de {p}", "{p} para mujer", "{p} para hombre",
-            "nuevo {p}", "accesorios para {p}", "{p} baratos", "venta de {p}"
-        ]
-    elif idioma == "Inglés":
-        return [
-            "buy {p}", "best {p}", "{p} online", "{p} for men", "{p} for women",
-            "cheap {p}", "new {p}", "original {p}", "premium {p}", "2025 {p}"
-        ]
-    elif idioma == "Portugués":
-        return [
-            "comprar {p}", "melhores {p}", "promoção de {p}", "{p} online",
-            "{p} barato", "{p} novo", "oferta de {p}", "acessórios para {p}"
-        ]
+nivel = st.selectbox("⚙️ Nivel de complejidad", ["Básico", "Intermedio", "Avanzado"])
 
-# ============================
-# COMPLEJIDAD
-# ============================
-def agregar_complejidad(keyword, nivel):
-    extras = {
-        "Básico": [],
-        "Intermedio": ["2025", "envío gratis", "original", "calidad"],
-        "Avanzado": ["edición limitada", "alta gama", "colección especial", "exclusivo"]
-    }[nivel]
+st.markdown("---")
 
-    if extras and random.random() < 0.5:
-        return f"{keyword} {random.choice(extras)}"
-    return keyword
-
-# ============================
-# GENERADOR
-# ============================
-def generar_keywords(producto, idioma, longitud, complejidad, cantidad):
-    producto = producto.strip().lower()
-    patrones = patrones_por_idioma(idioma)
-    combinaciones = []
-
-    for _ in range(cantidad * 3):
-        base = random.choice(patrones).replace("{p}", producto)
-        kw = agregar_complejidad(base, complejidad)
-        palabras = kw.split()
-        if len(palabras) <= longitud:
-            combinaciones.append(kw)
-
-    combinaciones = list(set(combinaciones))
-    random.shuffle(combinaciones)
-    return combinaciones[:cantidad]
-
-# ============================
-# BOTÓN
-# ============================
-if st.button("✨ Generar keywords adaptadas"):
-    if not producto.strip():
-        st.error("⚠️ Escribí un producto o categoría primero.")
+# -------------------- GENERACIÓN --------------------
+if st.button("🚀 Generar keywords adaptadas"):
+    if base.strip() == "":
+        st.warning("Por favor, ingresá una palabra base.")
     else:
-        st.success("✅ Palabras clave generadas:")
-        keywords = generar_keywords(producto, idioma, longitud, complejidad, cantidad)
-        for kw in keywords:
-            st.markdown(f"• {kw}")
+        with st.spinner("Generando combinaciones..."):
+            for percent_complete in range(100):
+                time.sleep(0.01)
+                st.progress(percent_complete + 1)
+        time.sleep(0.3)
 
-        df = pd.DataFrame(keywords, columns=["Keyword"])
-        csv = df.to_csv(index=False).encode('utf-8')
+        resultados = generar_keywords(base, idioma, cantidad, palabras, nivel, tipo)
+        st.success("✅ Palabras clave generadas con éxito:")
+
+        for kw in resultados:
+            st.markdown(f"<div class='keyword-card'>• {kw}</div>", unsafe_allow_html=True)
+
+        # Descargar CSV
+        csv_data = "\n".join(resultados)
         st.download_button(
             label="⬇️ Descargar CSV",
-            data=csv,
-            file_name=f"keywords_{producto}.csv",
+            data=csv_data,
+            file_name=f"keywords_{base}.csv",
             mime="text/csv"
         )
 
-# ============================
-# FOOTER
-# ============================
-st.markdown("<p style='text-align:center;color:#64748b;margin-top:1rem;'>Hecho con 💙 — Keyword Finder Pro+ v2</p>", unsafe_allow_html=True)
+st.markdown("<br><center>💼 Hecho con ❤️ — Keyword Finder Pro+ v3</center>", unsafe_allow_html=True)
