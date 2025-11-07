@@ -97,33 +97,54 @@ h3 {
 # ===============================
 # 🧠 FUNCIÓN PARA GENERAR KEYWORDS
 # ===============================
-def generate_keywords(category: str, api_key: str):
-    """Genera keywords usando Google Gemini"""
-    if not api_key:
-        st.error("⚠️ Por favor, ingresá tu API Key de Gemini.")
-        return ""
-    try:
-        # Configurar la API key
-        genai.configure(api_key=api_key)
+# --- Generador de Keywords con Gemini ---
+import google.generativeai as genai
 
-        # Crear el modelo compatible con v1beta
-        model = genai.GenerativeModel("models/gemini-pro")
+# Botón para generar
+if st.button("✨ Generar keywords"):
+    if not api_key or not categoria:
+        st.warning("⚠️ Por favor, ingresá tu API Key y escribí una categoría antes de continuar.")
+    else:
+        with st.spinner("Generando palabras clave rentables... 🔍"):
+            try:
+                # Configurar la API
+                genai.configure(api_key=api_key)
 
-        # Generar contenido
-        with st.spinner("Generando ideas con Gemini..."):
-            prompt = (
-                f"Genera una lista de 25 palabras clave relevantes para el nicho '{category}'. "
-                "Incluye términos amplios y long-tail, todos separados por saltos de línea. "
-                "Evita oraciones completas; solo keywords o frases cortas de búsqueda."
-            )
-            response = model.generate_content(prompt)
+                # Crear el prompt
+                prompt = f"""
+                Sos un experto en marketing y e-commerce.
+                Generá una lista de al menos 20 palabras clave muy rentables, relevantes y variadas
+                para buscar productos exitosos en la biblioteca de anuncios de Facebook,
+                basadas en la categoría o nicho: "{categoria}".
 
-        # Devolver texto generado
-        return response.text.strip()
+                Formato de salida:
+                - Lista en viñetas o columnas
+                - Sin texto adicional
+                """
 
-    except Exception as e:
-        st.error(f"❌ Error al conectar con Gemini: {e}")
-        return ""
+                # Generar texto con el modelo
+                response = genai.generate_text(
+                    model="models/gemini-1.5-flash",  # modelo actual y soportado
+                    prompt=prompt
+                )
+
+                # Extraer resultado
+                if hasattr(response, "result"):
+                    output = response.result
+                else:
+                    output = response.candidates[0].output_text
+
+                # Mostrar resultado
+                st.success("✅ Palabras clave generadas con éxito:")
+                st.markdown(f"### 📋 Resultados para **{categoria}**")
+                st.markdown(output)
+
+                # Opción para copiar fácilmente
+                st.code(output, language="markdown")
+                st.caption("💡 Copiá estas palabras y usalas directamente en la biblioteca de anuncios de Facebook.")
+
+            except Exception as e:
+                st.error(f"❌ Error al conectar con Gemini: {e}")
 
 
 # ===============================
