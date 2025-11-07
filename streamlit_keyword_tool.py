@@ -256,7 +256,7 @@ st.markdown("---")
 st.caption("App creada para ayudarte a generar ideas y priorizar búsquedas en la Facebook Ads Library. No realiza scraping automático de Facebook ni usa API de Meta: traé tus propios CSV si querés análisis real sobre anuncios.")
 
 # Footer: next steps
-st.markdown("""
+st.markdown(""")
 **Siguientes pasos recomendados:**
 
 - Guardá tu OPENAI_API_KEY en los Secrets de Streamlit Cloud: `Settings -> Secrets` y agrega `OPENAI_API_KEY = "tu_key_aqui"`.  
