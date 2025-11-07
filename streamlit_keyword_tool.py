@@ -1,11 +1,11 @@
 import streamlit as st
-import google.generativeai as genai
+import random
 
 # ============================
 # CONFIGURACIÓN DE LA PÁGINA
 # ============================
 st.set_page_config(
-    page_title="Keyword Finder AI (Gemini Edition)",
+    page_title="Keyword Finder Pro",
     page_icon="🔍",
     layout="centered"
 )
@@ -15,9 +15,7 @@ st.set_page_config(
 # ============================
 st.markdown("""
     <style>
-        body {
-            background-color: #f8fafc;
-        }
+        body { background-color: #f8fafc; }
         .main {
             background-color: #ffffff;
             padding: 2rem;
@@ -25,7 +23,6 @@ st.markdown("""
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
             max-width: 700px;
             margin: auto;
-            transition: all 0.3s ease-in-out;
         }
         input, textarea {
             border-radius: 12px !important;
@@ -45,14 +42,8 @@ st.markdown("""
             transform: scale(1.05);
             background: linear-gradient(90deg, #1d4ed8, #1e3a8a);
         }
-        h1 {
-            text-align: center;
-            color: #1e3a8a;
-        }
-        h2 {
-            text-align: center;
-            color: #334155;
-        }
+        h1 { text-align: center; color: #1e3a8a; }
+        h2 { text-align: center; color: #334155; }
         .footer {
             text-align: center;
             font-size: 0.9em;
@@ -65,63 +56,49 @@ st.markdown("""
 # ============================
 # TÍTULO
 # ============================
-st.markdown("<h1>🔍 Keyword Finder AI (Gemini Edition)</h1>", unsafe_allow_html=True)
-st.markdown("<h2>Encuentra palabras clave rentables para tus búsquedas en la biblioteca de anuncios</h2>", unsafe_allow_html=True)
-
-# ============================
-# CAMPOS DE ENTRADA
-# ============================
+st.markdown("<h1>🔍 Keyword Finder Pro</h1>", unsafe_allow_html=True)
+st.markdown("<h2>Encuentra palabras clave útiles para tu e-commerce sin IA</h2>", unsafe_allow_html=True)
 st.write("")
-api_key = st.text_input("🔑 Tu API Key de Google Gemini:", type="password", placeholder="Pega tu API Key aquí...")
-user_input = st.text_input("💬 Escribí una categoría o nicho:", placeholder="Ejemplo: lámparas, relojes inteligentes, suplementos...")
 
 # ============================
-# FUNCIÓN PRINCIPAL
+# ENTRADA DE USUARIO
 # ============================
-def generate_keywords(api_key, prompt):
-    try:
-        import google.generativeai as genai
-        genai.configure(api_key=api_key)
+producto = st.text_input("💬 Escribí una categoría o producto:", placeholder="Ejemplo: zapatillas, auriculares, relojes...")
 
-        # ✅ Modelo correcto para la versión moderna del SDK
-        model = genai.GenerativeModel("gemini-1.5-flash")
+# ============================
+# GENERADOR DE PALABRAS CLAVE
+# ============================
+def generar_keywords(base):
+    comunes = ["barato", "oferta", "tienda online", "dropshipping", "nuevo", "envío gratis", "tendencia", "moda", "original", "calidad premium"]
+    tipos = ["gamer", "bluetooth", "inalámbrico", "recargable", "smart", "para mujer", "para hombre", "2025", "de lujo", "personalizado"]
 
-        response = model.generate_content(
-            f"Genera 20 palabras clave útiles para buscar productos de e-commerce en la biblioteca de anuncios de Facebook sobre: {prompt}. "
-            f"Devuélvelas separadas por comas, sin numeración ni texto adicional."
-        )
+    palabras_base = [base, f"{base}s", f"{base} {random.choice(tipos)}", f"{base} {random.choice(comunes)}"]
 
-        # Extraer el texto generado
-        return response.text.strip()
+    combinaciones = [f"{base} {t}" for t in tipos] + [f"{base} {c}" for c in comunes]
 
-    except Exception as e:
-        return f"❌ Error al conectar con Gemini: {e}"
+    sugerencias = list(set(palabras_base + combinaciones))
+    random.shuffle(sugerencias)
+    return sugerencias[:20]
 
 # ============================
 # BOTÓN DE GENERACIÓN
 # ============================
-generate = st.button("✨ Generar keywords", key="generate_keywords_btn")
-
-if generate:
-    if not api_key.strip():
-        st.error("⚠️ Por favor, ingresa tu API Key de Gemini antes de continuar.")
-    elif not user_input.strip():
-        st.error("⚠️ Escribí una categoría o nicho antes de generar las keywords.")
+if st.button("✨ Generar palabras clave"):
+    if not producto.strip():
+        st.error("⚠️ Escribí un producto o categoría primero.")
     else:
-        with st.spinner("🧠 Generando palabras clave con IA..."):
-            keywords = generate_keywords(api_key, user_input)
+        st.success("✅ Palabras clave sugeridas:")
+        palabras = generar_keywords(producto.lower())
+        for p in palabras:
+            st.markdown(f"• {p}")
 
-        if keywords.startswith("❌ Error"):
-            st.error(keywords)
-        else:
-            st.success("✅ Palabras clave generadas con éxito:")
-            st.markdown(f"<div class='main'>{keywords}</div>", unsafe_allow_html=True)
+        st.info("💡 Consejo: copiá estas palabras y usalas directamente en la [Biblioteca de anuncios de Facebook](https://www.facebook.com/ads/library/) para descubrir productos en tendencia.")
 
 # ============================
 # FOOTER
 # ============================
 st.markdown("""
 <div class='footer'>
-Hecho con 💙 para creadores de e-commerce — Potenciado por Gemini AI
+Hecho con 💙 por un creador de e-commerce — versión sin IA
 </div>
 """, unsafe_allow_html=True)
