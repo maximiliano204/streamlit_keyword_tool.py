@@ -101,7 +101,6 @@ h3 {
 import google.generativeai as genai
 
 # Botón para generar
-if st.button("✨ Generar keywords"):
     if not api_key or not categoria:
         st.warning("⚠️ Por favor, ingresá tu API Key y escribí una categoría antes de continuar.")
     else:
