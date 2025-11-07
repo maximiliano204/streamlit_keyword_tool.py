@@ -104,7 +104,7 @@ def generate_keywords(category: str, api_key: str):
         return ""
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
+       model = genai.GenerativeModel("gemini-pro")
         with st.spinner("Generando ideas con Gemini..."):
             prompt = (
                 f"Genera una lista de 25 palabras clave relevantes para el nicho '{category}'. "
