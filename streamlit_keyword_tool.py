@@ -80,25 +80,23 @@ user_input = st.text_input("💬 Escribí una categoría o nicho:", placeholder=
 # ============================
 def generate_keywords(api_key, prompt):
     try:
+        import google.generativeai as genai
         genai.configure(api_key=api_key)
 
-        # Modelo actual compatible
-        response = genai.generate_text(
-            model="models/gemini-1.5-flash",
-            prompt=f"Genera 20 palabras clave útiles para buscar productos de e-commerce en la biblioteca de anuncios de Facebook sobre: {prompt}. "
-                   f"Devuélvelas separadas por comas, sin numeración ni texto adicional."
+        # Modelo actualizado (válido en 2025)
+        model = genai.GenerativeModel("gemini-1.5-flash")
+
+        response = model.generate_content(
+            f"Genera 20 palabras clave útiles para buscar productos de e-commerce en la biblioteca de anuncios de Facebook sobre: {prompt}. "
+            f"Devuélvelas separadas por comas, sin numeración ni texto adicional."
         )
 
-        # Extrae texto de respuesta
-        if hasattr(response, "result"):
-            text = response.result
-        else:
-            text = response.candidates[0].output_text
-
+        text = response.text.strip()
         return text
 
     except Exception as e:
         return f"❌ Error al conectar con Gemini: {e}"
+
 
 # ============================
 # BOTÓN DE GENERACIÓN
