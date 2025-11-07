@@ -1,10 +1,10 @@
 # streamlit_keyword_tool.py
 import streamlit as st
 from openai import OpenAI
-import time
+import pyperclip
 
 # ===============================
-# 🔑 Configuración de la app
+# ⚙️ CONFIGURACIÓN
 # ===============================
 st.set_page_config(
     page_title="Keyword Finder AI",
@@ -13,7 +13,7 @@ st.set_page_config(
 )
 
 # ===============================
-# 🎨 Estilo minimalista
+# 🎨 ESTILO CUSTOM
 # ===============================
 st.markdown("""
 <style>
@@ -22,8 +22,15 @@ body {
     color: #ffffff;
     font-family: "Inter", sans-serif;
 }
-h1, h2, h3 {
+h1 {
     color: #36cfc9;
+    text-align: center;
+}
+h3 {
+    color: #a5a5a5;
+    text-align: center;
+    font-weight: 400;
+    margin-bottom: 2rem;
 }
 .stTextInput>div>div>input {
     background-color: #1b1f24;
@@ -46,6 +53,9 @@ h1, h2, h3 {
     border-radius: 10px;
     padding: 1rem;
     margin-top: 1rem;
+    white-space: pre-wrap;
+    color: #f0f0f0;
+    font-size: 0.95rem;
 }
 .footer {
     text-align: center;
@@ -53,76 +63,89 @@ h1, h2, h3 {
     color: #888;
     margin-top: 2rem;
 }
+.copy-btn {
+    display: flex;
+    justify-content: right;
+    margin-top: -0.5rem;
+}
 </style>
 """, unsafe_allow_html=True)
 
 # ===============================
-# 🧠 Cliente de OpenAI
+# 🧠 FUNCIÓN PARA OBTENER KEYWORDS
 # ===============================
-client = None
-
-def set_openai_key(key: str):
-    """Inicializa el cliente OpenAI"""
-    global client
-    if not key:
-        client = None
-        return
-    client = OpenAI(api_key=key)
-
-# ===============================
-# ⚙️ Llamada a la IA
-# ===============================
-def generate_keywords(category: str) -> str:
-    """Genera keywords a partir de una categoría de producto"""
-    global client
-    if client is None:
-        st.error("⚠️ No se detectó tu API Key. Agrégala en los secrets de Streamlit.")
+def generate_keywords(category: str, api_key: str) -> str:
+    """Genera keywords con OpenAI"""
+    if not api_key:
+        st.error("⚠️ Debes ingresar tu API Key para continuar.")
         return ""
-    
+
     try:
+        client = OpenAI(api_key=api_key)
         with st.spinner("Generando ideas..."):
             response = client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": "Eres un experto en marketing digital y análisis de anuncios. Generas keywords específicas, rentables y actuales para buscar productos en la Biblioteca de Anuncios de Facebook."},
-                    {"role": "user", "content": f"Genera una lista de 20 palabras clave relevantes para el nicho '{category}'. Combina términos amplios, long-tails y relacionados a productos físicos que se vendan bien."}
+                    {
+                        "role": "system",
+                        "content": (
+                            "Eres un experto en marketing digital y análisis de e-commerce. "
+                            "Tu tarea es generar keywords específicas, rentables y actuales "
+                            "para buscar productos en la Biblioteca de Anuncios de Facebook."
+                        ),
+                    },
+                    {
+                        "role": "user",
+                        "content": (
+                            f"Genera una lista de 25 palabras clave relacionadas con el nicho '{category}'. "
+                            "Incluye combinaciones amplias y long-tail, separadas por saltos de línea. "
+                            "Evita oraciones completas, solo términos o frases cortas."
+                        ),
+                    },
                 ],
                 temperature=0.8,
-                max_tokens=400
+                max_tokens=400,
             )
         return response.choices[0].message.content.strip()
     except Exception as e:
-        st.error(f"Error llamando a OpenAI: {e}")
+        st.error(f"❌ Error al conectar con OpenAI: {e}")
         return ""
 
 # ===============================
-# 🧩 Interfaz principal
+# 🧩 INTERFAZ PRINCIPAL
 # ===============================
 st.title("🔍 Keyword Finder AI")
-st.subheader("Encuentra palabras clave ganadoras para e-commerce")
+st.markdown("<h3>Encuentra ideas rentables para tus búsquedas en la biblioteca de anuncios</h3>", unsafe_allow_html=True)
 
-st.markdown("Escribí una **categoría o nicho** (por ejemplo: *fitness*, *mascotas*, *hogar*, *mate*, etc.) y la IA te dará ideas de keywords para buscar en la Biblioteca de Anuncios de Facebook.")
+st.divider()
 
-# API Key (desde los secrets o manual)
-api_key = st.secrets.get("OPENAI_API_KEY", "")
-if not api_key:
-    st.warning("No hay API Key configurada. Agregala en Settings → Secrets como `OPENAI_API_KEY`.")
-else:
-    set_openai_key(api_key)
+# Campo para API Key
+api_key = st.text_input("🔑 Tu API Key de OpenAI:", type="password", placeholder="sk-...")
 
-# Campo de entrada
-category = st.text_input("🧠 Escribí una categoría o nicho:", placeholder="Ej: accesorios para mate")
+# Campo de categoría
+category = st.text_input("🧠 Escribí una categoría o nicho:", placeholder="Ej: fitness, hogar, mascotas...")
 
-# Botón de acción
-if st.button("✨ Generar keywords"):
-    if category.strip():
-        keywords = generate_keywords(category)
-        if keywords:
-            st.markdown(f"<div class='result-box'><pre>{keywords}</pre></div>", unsafe_allow_html=True)
-    else:
+# Botón principal
+generate = st.button("✨ Generar keywords")
+
+if generate:
+    if not category.strip():
         st.warning("Por favor, escribí una categoría antes de generar.")
+    else:
+        keywords = generate_keywords(category, api_key)
+        if keywords:
+            st.markdown("<div class='result-box'>", unsafe_allow_html=True)
+            st.markdown(keywords)
+            st.markdown("</div>", unsafe_allow_html=True)
+
+            # Botón de copiar
+            st.markdown("<div class='copy-btn'>", unsafe_allow_html=True)
+            if st.button("📋 Copiar al portapapeles"):
+                pyperclip.copy(keywords)
+                st.success("✅ Keywords copiadas al portapapeles.")
+            st.markdown("</div>", unsafe_allow_html=True)
 
 # ===============================
-# 📎 Footer
+# 📎 FOOTER
 # ===============================
-st.markdown("<div class='footer'>Hecho con ❤️ para creadores de e-commerce</div>", unsafe_allow_html=True)
+st.markdown("<div class='footer'>Hecho con ❤️ para creadores de e-commerce — powered by GPT-4o-mini</div>", unsafe_allow_html=True)
