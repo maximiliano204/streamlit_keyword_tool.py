@@ -103,8 +103,13 @@ def generate_keywords(category: str, api_key: str):
         st.error("⚠️ Por favor, ingresá tu API Key de Gemini.")
         return ""
     try:
+        # Configurar la API key
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("models/gemini-1.5-flash-latest")   # ✅ modelo correcto y con indentación limpia
+
+        # Crear el modelo compatible con v1beta
+        model = genai.GenerativeModel("models/gemini-pro")
+
+        # Generar contenido
         with st.spinner("Generando ideas con Gemini..."):
             prompt = (
                 f"Genera una lista de 25 palabras clave relevantes para el nicho '{category}'. "
@@ -112,10 +117,14 @@ def generate_keywords(category: str, api_key: str):
                 "Evita oraciones completas; solo keywords o frases cortas de búsqueda."
             )
             response = model.generate_content(prompt)
+
+        # Devolver texto generado
         return response.text.strip()
+
     except Exception as e:
         st.error(f"❌ Error al conectar con Gemini: {e}")
         return ""
+
 
 # ===============================
 # 🧩 INTERFAZ DE USUARIO
