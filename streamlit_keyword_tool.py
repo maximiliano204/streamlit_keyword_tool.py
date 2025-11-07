@@ -83,7 +83,7 @@ def generate_keywords(api_key, prompt):
         import google.generativeai as genai
         genai.configure(api_key=api_key)
 
-        # Modelo actualizado (válido en 2025)
+        # ✅ Modelo correcto para la versión moderna del SDK
         model = genai.GenerativeModel("gemini-1.5-flash")
 
         response = model.generate_content(
@@ -91,12 +91,11 @@ def generate_keywords(api_key, prompt):
             f"Devuélvelas separadas por comas, sin numeración ni texto adicional."
         )
 
-        text = response.text.strip()
-        return text
+        # Extraer el texto generado
+        return response.text.strip()
 
     except Exception as e:
         return f"❌ Error al conectar con Gemini: {e}"
-
 
 # ============================
 # BOTÓN DE GENERACIÓN
