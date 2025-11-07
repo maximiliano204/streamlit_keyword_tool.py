@@ -1,7 +1,6 @@
 # streamlit_keyword_tool.py
 import streamlit as st
 from openai import OpenAI
-import pyperclip
 
 # ===============================
 # ⚙️ CONFIGURACIÓN
@@ -66,7 +65,20 @@ h3 {
 .copy-btn {
     display: flex;
     justify-content: right;
-    margin-top: -0.5rem;
+    margin-top: 0.5rem;
+}
+.copy-btn button {
+    background-color: #2a2f35;
+    color: #36cfc9;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+.copy-btn button:hover {
+    background-color: #36cfc9;
+    color: #0e1117;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -116,7 +128,6 @@ def generate_keywords(category: str, api_key: str) -> str:
 # ===============================
 st.title("🔍 Keyword Finder AI")
 st.markdown("<h3>Encuentra ideas rentables para tus búsquedas en la biblioteca de anuncios</h3>", unsafe_allow_html=True)
-
 st.divider()
 
 # Campo para API Key
@@ -134,16 +145,16 @@ if generate:
     else:
         keywords = generate_keywords(category, api_key)
         if keywords:
-            st.markdown("<div class='result-box'>", unsafe_allow_html=True)
-            st.markdown(keywords)
-            st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown(f"<div class='result-box' id='result-box'>{keywords}</div>", unsafe_allow_html=True)
 
-            # Botón de copiar
-            st.markdown("<div class='copy-btn'>", unsafe_allow_html=True)
-            if st.button("📋 Copiar al portapapeles"):
-                pyperclip.copy(keywords)
-                st.success("✅ Keywords copiadas al portapapeles.")
-            st.markdown("</div>", unsafe_allow_html=True)
+            # Botón de copiar con JavaScript (funciona en Streamlit Cloud)
+            st.markdown("""
+                <div class='copy-btn'>
+                    <button onclick="navigator.clipboard.writeText(document.getElementById('result-box').innerText)">
+                        📋 Copiar al portapapeles
+                    </button>
+                </div>
+            """, unsafe_allow_html=True)
 
 # ===============================
 # 📎 FOOTER
