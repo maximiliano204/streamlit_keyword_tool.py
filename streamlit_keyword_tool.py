@@ -256,17 +256,15 @@ st.markdown("---")
 st.caption("App creada para ayudarte a generar ideas y priorizar búsquedas en la Facebook Ads Library. No realiza scraping automático de Facebook ni usa API de Meta: traé tus propios CSV si querés análisis real sobre anuncios.")
 
 # Footer: next steps
-st.markdown(""")
+# Footer: next steps
+st.markdown("""
 **Siguientes pasos recomendados:**
 
-- Guardá tu OPENAI_API_KEY en los Secrets de Streamlit Cloud: `Settings -> Secrets` y agrega `OPENAI_API_KEY = "tu_key_aqui"`.  
-- Subí este archivo a un repositorio en GitHub y conectalo desde Streamlit Cloud para despliegue continuo.  
-- Si querés integrar Google Trends, instalá `pytrends` en el requirements y activá la casilla en la sidebar; después podés pedirme que agregue esa función.
+1. Prueba buscar diferentes categorías (por ejemplo “hogar”, “fitness”, “mascotas”).
+2. Copia las keywords generadas y pégalas en la Biblioteca de Anuncios de Facebook.
+3. Analiza qué tipos de anuncios aparecen más y sus textos.
+4. Ajusta tus búsquedas con variaciones hasta encontrar productos ganadores.
 
-Si querés, puedo:
-- Adaptar la app para que haga scrapes legales o use una API concreta (si tenés acceso a una API de Ads).  
-- Añadir una tabla de keywords con edición inline y guardado directo.  
-
-Decime si querés que te arme el `requirements.txt` y el `README.md` listos para subir a GitHub.
-""
-)
+---
+App creada para ayudarte a generar ideas con IA 🔍✨
+""")
